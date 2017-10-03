@@ -44,6 +44,7 @@ import android.annotation.IdRes;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Handler;
+import android.os.PowerManager;
 import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.view.Display;
@@ -159,6 +160,7 @@ import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.ResourcesSplitShadeStateController;
 import com.android.systemui.statusbar.policy.data.repository.FakeUserSetupRepository;
+import com.android.systemui.tuner.TunerService;
 import com.android.systemui.unfold.SysUIUnfoldComponent;
 import com.android.systemui.user.domain.interactor.UserSwitcherInteractor;
 import com.android.systemui.util.kotlin.JavaAdapter;
@@ -214,6 +216,7 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
     @Mock protected CommandQueue mCommandQueue;
     @Mock protected VibratorHelper mVibratorHelper;
     @Mock protected LatencyTracker mLatencyTracker;
+    @Mock protected PowerManager mPowerManager;
     @Mock protected AccessibilityManager mAccessibilityManager;
     @Mock protected MetricsLogger mMetricsLogger;
     @Mock protected Resources mResources;
@@ -238,6 +241,7 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
     @Mock protected NavigationBarController mNavigationBarController;
     @Mock protected QuickSettingsControllerImpl mQsController;
     @Mock protected ShadeHeaderController mShadeHeaderController;
+    @Mock protected TunerService mTunerService;
     @Mock protected TapAgainViewController mTapAgainViewController;
     @Mock protected KeyguardIndicationController mKeyguardIndicationController;
     @Mock protected FragmentService mFragmentService;
@@ -526,7 +530,7 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
                 mStatusBarStateController,
                 mNotificationShadeWindowController,
                 mDozeLog, mDozeParameters, mCommandQueue, mVibratorHelper,
-                mLatencyTracker, mAccessibilityManager, 0, mUpdateMonitor,
+                mLatencyTracker, mPowerManager, mAccessibilityManager, 0, mUpdateMonitor,
                 mMetricsLogger,
                 mShadeLog,
                 mConfigurationController,
@@ -583,7 +587,8 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
                 mMSDLPlayer,
                 mBrightnessMirrorShowingRepository,
                 new BlurConfig(0f, 0f),
-                () -> mKosmos.getFakeShadeDisplaysRepository());
+                () -> mKosmos.getFakeShadeDisplaysRepository(),
+                mTunerService);
         mNotificationPanelViewController.initDependencies(
                 mCentralSurfaces,
                 null,
