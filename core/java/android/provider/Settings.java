@@ -10837,6 +10837,12 @@ public final class Settings {
                 "launcher_taskbar_education_showing";
 
         /**
+         * Controls whether double tap to sleep is enabled.
+         * @hide
+         */
+        public static final String DOUBLE_TAP_SLEEP_GESTURE = "double_tap_sleep_gesture";
+
+        /**
          * These entries are considered common between the personal and the managed profile,
          * since the managed profile doesn't get to change them.
          */
