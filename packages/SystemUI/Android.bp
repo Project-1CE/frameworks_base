@@ -196,6 +196,7 @@ android_library {
         "motion_tool_lib",
     ],
     manifest: "AndroidManifest.xml",
+    additional_manifests: ["IceManifest.xml"],
     defaults: [
         "SystemUI_compose_defaults",
     ],
