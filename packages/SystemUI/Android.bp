@@ -542,6 +542,7 @@ android_library {
         "aconfig_settings_flags_lib",
     ],
     manifest: "AndroidManifest.xml",
+    additional_manifests: ["IceManifest.xml"],
     libs: [
         "android.car",
         "extphonelib",
