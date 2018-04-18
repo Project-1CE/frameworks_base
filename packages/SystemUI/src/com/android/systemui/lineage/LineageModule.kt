@@ -17,6 +17,7 @@
 package com.android.systemui.lineage
 
 import com.android.systemui.qs.tileimpl.QSTileImpl
+import com.android.systemui.qs.tiles.AODTile
 import com.android.systemui.qs.tiles.CaffeineTile
 import com.android.systemui.qs.tiles.HeadsUpTile
 
@@ -27,6 +28,12 @@ import dagger.multibindings.StringKey
 
 @Module
 interface LineageModule {
+    /** Inject AODTile into tileMap in QSModule */
+    @Binds
+    @IntoMap
+    @StringKey(AODTile.TILE_SPEC)
+    fun bindAODTile(aodTile: AODTile): QSTileImpl<*>
+
     /** Inject CaffeineTile into tileMap in QSModule */
     @Binds
     @IntoMap
