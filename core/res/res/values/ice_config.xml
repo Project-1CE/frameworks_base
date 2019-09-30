@@ -45,4 +45,12 @@
 
     <!-- Expected value from fast charging status file -->
     <string name="config_oemFastChargerStatusValue" translatable="false">1</string>
+
+    <!-- Whether device has an alert slider -->
+    <bool name="config_hasAlertSlider" translatable="false">false</bool>
+
+    <!-- The location of the device's alert slider:
+         0: Left side
+         1: Right side -->
+    <integer name="config_alertSliderLocation">0</integer>
 </resources>
