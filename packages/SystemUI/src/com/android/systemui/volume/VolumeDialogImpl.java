@@ -899,9 +899,14 @@ public class VolumeDialogImpl implements VolumeDialog,
                 if (row.device.isConnected()) {
                     boolean active = row.device.equals(mLocalMediaManager.getCurrentConnectedDevice());
                     row.name.setText(row.device.getName());
-                    Util.setVisOrGone(row.summary, !row.device.getSummary().equals(""));
-                    row.summary.setText(row.device.getSummary());
-                    Util.setVisOrGone(row.selected, active);
+                    if (row.device.getSummary() != null) {
+                        Util.setVisOrGone(row.summary, !row.device.getSummary().equals(""));
+                        row.summary.setText(row.device.getSummary());
+                        Util.setVisOrGone(row.selected, active);
+                    } else {
+                        Util.setVisOrGone(row.summary, false);
+                        Util.setVisOrGone(row.selected, false);
+                    }
                     if (!row.addedToGroup) {
                         mMediaOutputView.addView(row.view);
                         row.addedToGroup = true;
