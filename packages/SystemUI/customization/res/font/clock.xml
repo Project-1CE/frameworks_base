@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 **
-** Copyright 2022, The Android Open Source Project
+** Copyright 2020, The Android Open Source Project
 **
 ** Licensed under the Apache License, Version 2.0 (the "License")
 ** you may not use this file except in compliance with the License.
@@ -16,16 +16,12 @@
 ** limitations under the License.
 */
 -->
-<com.android.systemui.shared.clocks.AnimatableClockView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center"
-    android:gravity="center_horizontal"
-    android:textSize="@dimen/large_clock_text_size"
-    android:fontFamily="@font/clock"
-    android:typeface="monospace"
-    android:elegantTextHeight="false"
-    chargeAnimationDelay="200"
-    dozeWeight="200"
-    lockScreenWeight="400" />
+
+<!--
+** AOD/LockScreen Clock font.
+** Should include all numeric glyphs in all supported locales.
+** Recommended: font with variable width to support AOD => LS animations
+-->
+<font-family xmlns:android="http://schemas.android.com/apk/res/android">
+    <font android:font="@font/google_sans_clock"/>
+</font-family>
