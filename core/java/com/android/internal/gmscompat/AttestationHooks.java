@@ -21,6 +21,7 @@ import android.os.Build;
 import android.util.Log;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 
 /** @hide */
 public final class AttestationHooks {
@@ -28,6 +29,8 @@ public final class AttestationHooks {
 
     private static final String PACKAGE_GMS = "com.google.android.gms";
     private static final String PROCESS_UNSTABLE = "com.google.android.gms.unstable";
+
+    private static volatile boolean sIsGms = false;
 
     private AttestationHooks() { }
 
@@ -52,10 +55,23 @@ public final class AttestationHooks {
         String processName = Application.getProcessName();
 
         if (PACKAGE_GMS.equals(packageName) && PROCESS_UNSTABLE.equals(processName)) {
+            sIsGms = true;
             setBuildField("DEVICE", "redfin");
             setBuildField("PRODUCT", "redfin");
             setBuildField("MODEL", "Pixel 5");
             setBuildField("FINGERPRINT", "google/redfin/redfin:13/TQ3A.230605.011/10161073:user/release-keys");
+        }
+    }
+
+    private static boolean isCallerSafetyNet() {
+        return Arrays.stream(Thread.currentThread().getStackTrace())
+                .anyMatch(elem -> elem.getClassName().contains("DroidGuard"));
+    }
+
+    public static void onEngineGetCertificateChain() {
+        // Check stack for SafetyNet
+        if (sIsGms && isCallerSafetyNet()) {
+            throw new UnsupportedOperationException();
         }
     }
 }
