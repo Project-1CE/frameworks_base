@@ -61,6 +61,7 @@ public class BrightnessController implements ToggleSlider.Listener, MirroredBrig
     private static final String TAG = "CentralSurfaces.BrightnessController";
     private static final int SLIDER_ANIMATION_DURATION = 3000;
 
+    private static final int MSG_UPDATE_TOGGLE = 0;
     private static final int MSG_UPDATE_SLIDER = 1;
     private static final int MSG_ATTACH_LISTENER = 2;
     private static final int MSG_DETACH_LISTENER = 3;
@@ -216,6 +217,7 @@ public class BrightnessController implements ToggleSlider.Listener, MirroredBrig
                     Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL,
                     mUserTracker.getUserId());
             mAutomatic = automatic != Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL;
+            mHandler.obtainMessage(MSG_UPDATE_TOGGLE, automatic).sendToTarget();
         }
     };
 
@@ -254,6 +256,10 @@ public class BrightnessController implements ToggleSlider.Listener, MirroredBrig
             mExternalChange = true;
             try {
                 switch (msg.what) {
+                    case MSG_UPDATE_TOGGLE:
+                        mControl.setToggleValue(
+                                (int) msg.obj != Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL);
+                        break;
                     case MSG_UPDATE_SLIDER:
                         updateSlider(Float.intBitsToFloat(msg.arg1), msg.arg2 != 0);
                         break;
@@ -362,6 +368,15 @@ public class BrightnessController implements ToggleSlider.Listener, MirroredBrig
                     }
                 });
         }
+    }
+
+    @Override
+    public void onCheckedChanged(boolean isChecked) {
+        final int mode = mAutomatic ? Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL
+                : Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
+        Settings.System.putIntForUser(mContext.getContentResolver(),
+                Settings.System.SCREEN_BRIGHTNESS_MODE, mode,
+                mUserTracker.getUserId());
     }
 
     public void checkRestrictionAndSetEnabled() {
