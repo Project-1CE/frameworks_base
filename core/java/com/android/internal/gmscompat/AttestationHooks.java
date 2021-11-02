@@ -27,6 +27,7 @@ public final class AttestationHooks {
     private static final String TAG = "GmsCompat/Attestation";
 
     private static final String PACKAGE_GMS = "com.google.android.gms";
+    private static final String PROCESS_UNSTABLE = "com.google.android.gms.unstable";
 
     private AttestationHooks() { }
 
@@ -48,8 +49,9 @@ public final class AttestationHooks {
 
     public static void initApplicationBeforeOnCreate(Application app) {
         String packageName = app.getPackageName();
+        String processName = Application.getProcessName();
 
-        if (PACKAGE_GMS.equals(packageName)) {
+        if (PACKAGE_GMS.equals(packageName) && PROCESS_UNSTABLE.equals(processName)) {
             setBuildField("DEVICE", "redfin");
             setBuildField("PRODUCT", "redfin");
             setBuildField("MODEL", "Pixel 5");
