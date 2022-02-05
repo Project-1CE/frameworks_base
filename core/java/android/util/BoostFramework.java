@@ -68,7 +68,6 @@ public class BoostFramework {
     private static Method sperfHintAcqRelFunc = null;
     private static Method sperfHintRenewFunc = null;
     private static Method sPerfEventFunc = null;
-    private static Method sPerfGetPerfHalVerFunc = null;
     private static Method sPerfSyncRequest = null;
 
     private static Method sIOPStart = null;
@@ -287,15 +286,6 @@ public class BoostFramework {
                     sperfHintRenewFunc = sPerfClass.getMethod("perfHintRenew", argClasses);
 
                     try {
-                        argClasses = new Class[] {};
-                        sPerfGetPerfHalVerFunc = sPerfClass.getMethod("perfGetHalVer", argClasses);
-
-                    } catch (Exception e) {
-                        Log.i(TAG, "BoostFramework() : Exception_1 = perfGetHalVer not supported");
-                        sPerfGetPerfHalVerFunc = null;
-                    }
-
-                    try {
                         argClasses = new Class[] {int.class, int.class, String.class, int.class, String.class};
                         sUXEngineEvents =  sPerfClass.getDeclaredMethod("perfUXEngine_events",
                                                                           argClasses);
@@ -398,14 +388,6 @@ public class BoostFramework {
 /** @hide */
     public double getPerfHalVersion() {
         double retVal = PERF_HAL_V22;
-        try {
-            if (sPerfGetPerfHalVerFunc != null) {
-                Object ret = sPerfGetPerfHalVerFunc.invoke(mPerf);
-                retVal = (double)ret;
-            }
-        } catch(Exception e) {
-            Log.e(TAG,"Exception " + e);
-        }
         return retVal;
     }
 
