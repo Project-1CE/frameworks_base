@@ -178,7 +178,8 @@ public class TriStateUiControllerImpl implements ConfigurationListener, TriState
                 checkOrientationType();
             }
         };
-        mVolumeDialogController = (VolumeDialogController) Dependency.get(VolumeDialogController.class);
+        mVolumeDialogController =
+            (VolumeDialogController) Dependency.get(VolumeDialogController.class);
         IntentFilter ringerChanged = new IntentFilter(AudioManager.RINGER_MODE_CHANGED_ACTION);
         mContext.registerReceiver(mRingerStateReceiver, ringerChanged);
     }
@@ -198,13 +199,15 @@ public class TriStateUiControllerImpl implements ConfigurationListener, TriState
         mWindowType = windowType;
         mDensity = mContext.getResources().getConfiguration().densityDpi;
         mListener = listener;
-        ((ConfigurationController) Dependency.get(ConfigurationController.class)).addCallback(this);
+        ((ConfigurationController) Dependency.get(
+                        ConfigurationController.class)).addCallback(this);
         mVolumeDialogController.addCallback(mVolumeDialogCallback, mHandler);
         initDialog();
     }
 
     public void destroy() {
-        ((ConfigurationController) Dependency.get(ConfigurationController.class)).removeCallback(this);
+        ((ConfigurationController) Dependency.get(
+                        ConfigurationController.class)).removeCallback(this);
         mVolumeDialogController.removeCallback(mVolumeDialogCallback);
         mContext.unregisterReceiver(mRingerStateReceiver);
     }
@@ -281,7 +284,8 @@ public class TriStateUiControllerImpl implements ConfigurationListener, TriState
                         textId = R.string.volume_ringer_status_normal;
                         break;
                 }
-                int triStatePos = res.getInteger(com.android.internal.R.integer.config_alertSliderLocation);
+                int triStatePos = res.getInteger(
+                    com.android.internal.R.integer.config_alertSliderLocation);
                 boolean isTsKeyRight = true;
                 if (triStatePos == TRI_STATE_UI_POSITION_LEFT) {
                     isTsKeyRight = false;
@@ -295,16 +299,21 @@ public class TriStateUiControllerImpl implements ConfigurationListener, TriState
                         } else {
                             gravity = 83;
                         }
-                        positionY2 = res.getDimensionPixelSize(R.dimen.tri_state_up_dialog_position_deep_land);
+                        positionY2 = res.getDimensionPixelSize(
+                            R.dimen.tri_state_up_dialog_position_deep_land);
                         if (isTsKeyRight) {
-                            positionY2 += res.getDimensionPixelSize(com.android.internal.R.dimen.status_bar_height);
+                            positionY2 += res.getDimensionPixelSize(
+                                com.android.internal.R.dimen.status_bar_height);
                         }
                         if (mTriStateMode == MODE_SILENT) {
-                            positionX = res.getDimensionPixelSize(R.dimen.tri_state_up_dialog_position_l);
+                            positionX = res.getDimensionPixelSize(
+                                R.dimen.tri_state_up_dialog_position_l);
                         } else if (mTriStateMode == MODE_VIBRATE) {
-                            positionX = res.getDimensionPixelSize(R.dimen.tri_state_middle_dialog_position_l);
+                            positionX = res.getDimensionPixelSize(
+                                R.dimen.tri_state_middle_dialog_position_l);
                         } else if (mTriStateMode == MODE_NORMAL) {
-                            positionX = res.getDimensionPixelSize(R.dimen.tri_state_down_dialog_position_l);
+                            positionX = res.getDimensionPixelSize(
+                                R.dimen.tri_state_down_dialog_position_l);
                         }
                         bg = R.drawable.dialog_tri_state_middle_bg;
                         break;
@@ -314,17 +323,21 @@ public class TriStateUiControllerImpl implements ConfigurationListener, TriState
                         } else {
                             gravity = 85;
                         }
-                        positionX = res.getDimensionPixelSize(R.dimen.tri_state_up_dialog_position_deep);
-                        positionY2 = res.getDimensionPixelSize(com.android.internal.R.dimen.status_bar_height);
+                        positionX = res.getDimensionPixelSize(
+                            R.dimen.tri_state_up_dialog_position_deep);
+                        positionY2 = res.getDimensionPixelSize(
+                            com.android.internal.R.dimen.status_bar_height);
                         bg = R.drawable.dialog_tri_state_middle_bg;
                         if (mTriStateMode != MODE_SILENT) {
                             if (mTriStateMode != MODE_VIBRATE) {
                                 if (mTriStateMode == MODE_NORMAL) {
-                                    positionY2 += res.getDimensionPixelSize(R.dimen.tri_state_down_dialog_position);
+                                    positionY2 += res.getDimensionPixelSize(
+                                                    R.dimen.tri_state_down_dialog_position);
                                     break;
                                 }
                             }
-                            positionY2 += res.getDimensionPixelSize(R.dimen.tri_state_middle_dialog_position);
+                            positionY2 += res.getDimensionPixelSize(
+                                                R.dimen.tri_state_middle_dialog_position);
                             break;
                         }
                         positionY2 += res.getDimensionPixelSize(R.dimen.tri_state_up_dialog_position);
@@ -335,16 +348,21 @@ public class TriStateUiControllerImpl implements ConfigurationListener, TriState
                         } else {
                             gravity = 53;
                         }
-                        positionY2 = res.getDimensionPixelSize(R.dimen.tri_state_up_dialog_position_deep_land);
+                        positionY2 = res.getDimensionPixelSize(
+                                        R.dimen.tri_state_up_dialog_position_deep_land);
                         if (!isTsKeyRight) {
-                            positionY2 += res.getDimensionPixelSize(com.android.internal.R.dimen.status_bar_height);
+                            positionY2 += res.getDimensionPixelSize(
+                                            com.android.internal.R.dimen.status_bar_height);
                         }
                         if (mTriStateMode == MODE_SILENT) {
-                            positionX = res.getDimensionPixelSize(R.dimen.tri_state_up_dialog_position_l);
+                            positionX = res.getDimensionPixelSize(
+                                            R.dimen.tri_state_up_dialog_position_l);
                         } else if (mTriStateMode == MODE_VIBRATE) {
-                            positionX = res.getDimensionPixelSize(R.dimen.tri_state_middle_dialog_position_l);
+                            positionX = res.getDimensionPixelSize(
+                                            R.dimen.tri_state_middle_dialog_position_l);
                         } else if (mTriStateMode == MODE_NORMAL) {
-                            positionX = res.getDimensionPixelSize(R.dimen.tri_state_down_dialog_position_l);
+                            positionX = res.getDimensionPixelSize(
+                                            R.dimen.tri_state_down_dialog_position_l);
                         }
                         bg = R.drawable.dialog_tri_state_middle_bg;
                         break;
@@ -354,20 +372,30 @@ public class TriStateUiControllerImpl implements ConfigurationListener, TriState
                         } else {
                             gravity = 51;
                         }
-                        positionX = res.getDimensionPixelSize(R.dimen.tri_state_up_dialog_position_deep);
+                        positionX = res.getDimensionPixelSize(
+                                        R.dimen.tri_state_up_dialog_position_deep);
                         if (mTriStateMode != MODE_SILENT) {
                             if (mTriStateMode != MODE_VIBRATE) {
                                 if (mTriStateMode == MODE_NORMAL) {
-                                    positionY2 = res.getDimensionPixelSize(R.dimen.tri_state_down_dialog_position) + res.getDimensionPixelSize(com.android.internal.R.dimen.status_bar_height);
+                                    positionY2 = res.getDimensionPixelSize(
+                                        R.dimen.tri_state_down_dialog_position)
+                                        + res.getDimensionPixelSize(
+                                            com.android.internal.R.dimen.status_bar_height);
                                     bg = R.drawable.dialog_tri_state_down_bg;
                                     break;
                                 }
                             }
-                            positionY2 = res.getDimensionPixelSize(R.dimen.tri_state_middle_dialog_position) + res.getDimensionPixelSize(com.android.internal.R.dimen.status_bar_height);
+                            positionY2 = res.getDimensionPixelSize(
+                                R.dimen.tri_state_middle_dialog_position)
+                                + res.getDimensionPixelSize(
+                                    com.android.internal.R.dimen.status_bar_height);
                             bg = R.drawable.dialog_tri_state_middle_bg;
                             break;
                         }
-                        positionY2 = res.getDimensionPixelSize(R.dimen.tri_state_up_dialog_position) + res.getDimensionPixelSize(com.android.internal.R.dimen.status_bar_height);
+                        positionY2 = res.getDimensionPixelSize(
+                            R.dimen.tri_state_up_dialog_position)
+                            + res.getDimensionPixelSize(
+                                com.android.internal.R.dimen.status_bar_height);
                         bg = R.drawable.dialog_tri_state_up_bg;
                         break;
                 }
@@ -447,7 +475,8 @@ public class TriStateUiControllerImpl implements ConfigurationListener, TriState
 
     public void handleResetTimeout() {
         mHandler.removeMessages(MSG_DIALOG_DISMISS);
-        mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_DIALOG_DISMISS, MSG_RESET_SCHEDULE, 0), (long) DIALOG_TIMEOUT);
+        mHandler.sendMessageDelayed(mHandler.obtainMessage(
+                    MSG_DIALOG_DISMISS, MSG_RESET_SCHEDULE, 0), (long) DIALOG_TIMEOUT);
         if (mListener != null) {
             mListener.onTriStateUserActivity();
         }
