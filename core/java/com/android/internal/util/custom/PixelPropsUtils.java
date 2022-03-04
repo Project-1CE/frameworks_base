@@ -32,13 +32,11 @@ public class PixelPropsUtils {
     private static final boolean DEBUG = false;
 
     private static final Map<String, Object> propsToChangePixel6;
+    private static final String[] packagesToChangePixel6 = {
+            "com.google.android.gms"
+    };
 
     private static final Map<String, Object> propsToChangePixel5;
-    private static final String[] packagesToChangePixel5 = {
-            "com.google.android.tts",
-            "com.google.android.googlequicksearchbox",
-            "com.google.android.apps.recorder"
-    };
 
     private static final Map<String, ArrayList<String>> propsToKeep;
     private static final String[] extraPackagesToChange = {
@@ -80,10 +78,10 @@ public class PixelPropsUtils {
             sIsGms = true;
         }
         if (packageName.startsWith("com.google.") || Arrays.asList(extraPackagesToChange).contains(packageName)) {
-            Map<String, Object> propsToChange = propsToChangePixel6;
+            Map<String, Object> propsToChange = propsToChangePixel5;
 
-            if (Arrays.asList(packagesToChangePixel5).contains(packageName)) {
-                propsToChange = propsToChangePixel5;
+            if (Arrays.asList(packagesToChangePixel6).contains(packageName)) {
+                propsToChange = propsToChangePixel6;
             }
 
             if (DEBUG) Log.d(TAG, "Defining props for: " + packageName);
