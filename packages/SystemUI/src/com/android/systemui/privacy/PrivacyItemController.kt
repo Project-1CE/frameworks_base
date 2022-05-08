@@ -59,9 +59,11 @@ class PrivacyItemController @Inject constructor(
     internal companion object {
         val LOCATION_WHITELIST_PKG = arrayOf(
             "com.android.bluetooth",
+            "com.android.phone",
             "com.android.systemui",
             "com.google.android.gms",
             "com.qualcomm.location",
+            "com.qualcomm.qti.cne",
         )
         val OPS_MIC_CAMERA = intArrayOf(AppOpsManager.OP_CAMERA,
                 AppOpsManager.OP_PHONE_CALL_CAMERA, AppOpsManager.OP_RECORD_AUDIO,
