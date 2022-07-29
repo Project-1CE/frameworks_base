@@ -43,6 +43,11 @@
         android:focusable="true"
         android:paddingBottom="@dimen/qqs_layout_padding_bottom"
         android:importantForAccessibility="no">
+
+        <FrameLayout
+            android:id="@+id/qs_brightness_dialog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
     </com.android.systemui.qs.QuickQSPanel>
 
 </com.android.systemui.qs.QuickStatusBarHeader>
