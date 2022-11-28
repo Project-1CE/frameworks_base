@@ -315,11 +315,16 @@ public class DozeTriggers implements DozeMachine.Part {
                     }
                     gentleWakeUp(pulseReason);
                 } else if (isPickup) {
+                    final State state = mMachine.getState();
                     if (shouldDropPickupEvent())  {
                         mDozeLog.traceSensorEventDropped(pulseReason, "keyguard occluded");
                         return;
                     }
-                    gentleWakeUp(pulseReason);
+                    if (state == State.DOZE_AOD) {
+                        gentleWakeUp(pulseReason);
+                    } else {
+                        requestPulse(pulseReason, true, null);
+                    }
                 } else if (isUdfpsLongPress) {
                     final State state = mMachine.getState();
                     if (state == State.DOZE_AOD || state == State.DOZE) {
