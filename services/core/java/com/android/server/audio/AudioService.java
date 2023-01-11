@@ -1568,6 +1568,7 @@ public class AudioService extends IAudioService.Stub
         }
 
         synchronized (mAudioPolicies) {
+            ArrayList<AudioPolicyProxy> invalidProxies = new ArrayList<>();
             for (AudioPolicyProxy policy : mAudioPolicies.values()) {
                 final int status = policy.connectMixes();
                 if (status != AudioSystem.SUCCESS) {
@@ -1575,7 +1576,7 @@ public class AudioService extends IAudioService.Stub
                     Log.e(TAG, "onAudioServerDied: error "
                             + AudioSystem.audioSystemErrorToString(status)
                             + " when connecting mixes for policy " + policy.toLogFriendlyString());
-                    policy.release();
+                    invalidProxies.add(policy);
                 } else {
                     final int deviceAffinitiesStatus = policy.setupDeviceAffinities();
                     if (deviceAffinitiesStatus != AudioSystem.SUCCESS) {
@@ -1583,10 +1584,12 @@ public class AudioService extends IAudioService.Stub
                                 + AudioSystem.audioSystemErrorToString(deviceAffinitiesStatus)
                                 + " when connecting device affinities for policy "
                                 + policy.toLogFriendlyString());
-                        policy.release();
+                        invalidProxies.add(policy);
                     }
                 }
             }
+            invalidProxies.forEach((policy) -> policy.release());
+
         }
 
         // Restore capture policies
@@ -5079,16 +5082,17 @@ public class AudioService extends IAudioService.Stub
     }
 
     /**
-     * Return the pid of the current audio mode owner
+     * Return information on the current audio mode owner
      * @return 0 if nobody owns the mode
      */
     @GuardedBy("mDeviceBroker.mSetModeLock")
-    /*package*/ int getModeOwnerPid() {
+    /*package*/ AudioDeviceBroker.AudioModeInfo getAudioModeOwner() {
         SetModeDeathHandler hdlr = getAudioModeOwnerHandler();
         if (hdlr != null) {
-            return hdlr.getPid();
+            return new AudioDeviceBroker.AudioModeInfo(
+                    hdlr.getMode(), hdlr.getPid(), hdlr.getUid());
         }
-        return 0;
+        return new AudioDeviceBroker.AudioModeInfo(AudioSystem.MODE_NORMAL, 0 , 0);
     }
 
     /**
@@ -5270,7 +5274,7 @@ public class AudioService extends IAudioService.Stub
 
                 // when entering RINGTONE, IN_CALL or IN_COMMUNICATION mode, clear all SCO
                 // connections not started by the application changing the mode when pid changes
-                mDeviceBroker.postSetModeOwnerPid(pid, mode);
+                mDeviceBroker.postSetModeOwner(mode, pid, uid);
             } else {
                 Log.w(TAG, "onUpdateAudioMode: failed to set audio mode to: " + mode);
             }
@@ -5597,7 +5601,10 @@ public class AudioService extends IAudioService.Stub
         }
         return deviceIds.stream().mapToInt(Integer::intValue).toArray();
     }
-        /** @see AudioManager#setCommunicationDevice(int) */
+        /**
+         * @see AudioManager#setCommunicationDevice(int)
+         * @see AudioManager#clearCommunicationDevice()
+         */
     public boolean setCommunicationDevice(IBinder cb, int portId) {
         final int uid = Binder.getCallingUid();
         final int pid = Binder.getCallingPid();
@@ -5612,7 +5619,8 @@ public class AudioService extends IAudioService.Stub
                 throw new IllegalArgumentException("invalid device type " + device.getType());
             }
         }
-        final String eventSource = new StringBuilder("setCommunicationDevice(")
+        final String eventSource = new StringBuilder()
+                .append(device == null ? "clearCommunicationDevice(" : "setCommunicationDevice(")
                 .append(") from u/pid:").append(uid).append("/")
                 .append(pid).toString();
 
