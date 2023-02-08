@@ -18,6 +18,7 @@ package com.android.internal.gmscompat;
 
 import android.app.Application;
 import android.os.Build;
+import android.os.Build.VERSION;
 import android.util.Log;
 
 import java.lang.reflect.Field;
@@ -29,8 +30,10 @@ public final class AttestationHooks {
 
     private static final String PACKAGE_GMS = "com.google.android.gms";
     private static final String PROCESS_UNSTABLE = "com.google.android.gms.unstable";
+    private static final String PACKAGE_FINSKY = "com.android.vending";
 
     private static volatile boolean sIsGms = false;
+    private static volatile boolean sIsFinsky = false;
 
     private AttestationHooks() { }
 
@@ -50,27 +53,46 @@ public final class AttestationHooks {
         }
     }
 
+    private static void setVersionField(String key, Integer value) {
+        try {
+            // Unlock
+            Field field = Build.VERSION.class.getDeclaredField(key);
+            field.setAccessible(true);
+
+            // Edit
+            field.set(null, value);
+
+            // Lock
+            field.setAccessible(false);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            Log.e(TAG, "Failed to spoof Build." + key, e);
+        }
+    }
+
     public static void initApplicationBeforeOnCreate(Application app) {
-        String packageName = app.getPackageName();
-        String processName = Application.getProcessName();
+        final String packageName = app.getPackageName();
+        final String processName = Application.getProcessName();
 
         if (PACKAGE_GMS.equals(packageName) && PROCESS_UNSTABLE.equals(processName)) {
             sIsGms = true;
-            setBuildField("DEVICE", "redfin");
-            setBuildField("PRODUCT", "redfin");
-            setBuildField("MODEL", "Pixel 5");
-            setBuildField("FINGERPRINT", "google/redfin/redfin:13/TQ3A.230605.011/10161073:user/release-keys");
+            setBuildField("DEVICE", "walleye");
+            setBuildField("PRODUCT", "walleye");
+            setBuildField("MODEL", "Pixel 2");
+            setBuildField("FINGERPRINT", "google/walleye/walleye:8.1.0/OPM1.171019.011/4448085:user/release-keys");
+            setVersionField("DEVICE_INITIAL_SDK_INT", Build.VERSION_CODES.O);
+        } else if (PACKAGE_FINSKY.equals(packageName)) {
+            sIsFinsky = true;
         }
     }
 
     private static boolean isCallerSafetyNet() {
-        return Arrays.stream(Thread.currentThread().getStackTrace())
+        return sIsGms && Arrays.stream(Thread.currentThread().getStackTrace())
                 .anyMatch(elem -> elem.getClassName().contains("DroidGuard"));
     }
 
     public static void onEngineGetCertificateChain() {
-        // Check stack for SafetyNet
-        if (sIsGms && isCallerSafetyNet()) {
+        // Check stack for SafetyNet or Play Integrity
+        if (isCallerSafetyNet() || sIsFinsky) {
             throw new UnsupportedOperationException();
         }
     }
