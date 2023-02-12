@@ -37,6 +37,7 @@ import android.content.Context;
 // QTI_END: 2018-10-31: Core: IOP/UXE: This change is related to IOP and UXE Feature.
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.database.ContentObserver;
 // QTI_BEGIN: 2021-05-11: Core: refactor pre-rendering feature for BLASTBufferQueue
 import android.graphics.BLASTBufferQueue;
@@ -158,6 +159,9 @@ public class BoostFramework {
 
 // QTI_END: 2018-10-31: Core: IOP/UXE: This change is related to IOP and UXE Feature.
 // QTI_BEGIN: 2018-02-20: Performance: BoostFramework: To Enhance performance.
+    private static final boolean sIsSupported = Resources.getSystem().getBoolean(
+            com.android.internal.R.bool.config_supportsBoostFramework);
+
 /** @hide */
     private Object mPerf = null;
 // QTI_END: 2018-02-20: Performance: BoostFramework: To Enhance performance.
@@ -426,7 +430,7 @@ public class BoostFramework {
         synchronized(BoostFramework.class) {
 // QTI_END: 2018-02-20: Performance: BoostFramework: To Enhance performance.
 // QTI_BEGIN: 2018-03-21: Core: add perf_service into system_process.
-            if (sIsLoaded == false) {
+            if (sIsSupported && sIsLoaded == false) {
 // QTI_END: 2018-03-21: Core: add perf_service into system_process.
 // QTI_BEGIN: 2018-02-20: Performance: BoostFramework: To Enhance performance.
                 try {
@@ -581,6 +585,9 @@ public class BoostFramework {
 /** @hide */
     public int perfLockAcquire(int duration, int... list) {
         int ret = -1;
+        if (!sIsSupported) {
+            return ret;
+        }
         try {
 // QTI_END: 2018-02-20: Performance: BoostFramework: To Enhance performance.
 // QTI_BEGIN: 2018-03-21: Core: add perf_service into system_process.
@@ -599,6 +606,9 @@ public class BoostFramework {
 /** @hide */
     public int perfLockRelease() {
         int ret = -1;
+        if (!sIsSupported) {
+            return ret;
+        }
         try {
 // QTI_END: 2018-02-20: Performance: BoostFramework: To Enhance performance.
 // QTI_BEGIN: 2018-03-21: Core: add perf_service into system_process.
@@ -619,6 +629,9 @@ public class BoostFramework {
 /** @hide */
     public int perfHintRelease() {
         int ret = -1;
+        if (!sIsSupported) {
+            return ret;
+        }
         try {
             if (sPerfHintRelFunc != null) {
                 Object retVal = sPerfHintRelFunc.invoke(mPerf);
@@ -635,6 +648,9 @@ public class BoostFramework {
 /** @hide */
     public int perfLockReleaseHandler(int handle) {
         int ret = -1;
+        if (!sIsSupported) {
+            return ret;
+        }
         try {
 // QTI_END: 2018-02-20: Performance: BoostFramework: To Enhance performance.
 // QTI_BEGIN: 2018-03-21: Core: add perf_service into system_process.
@@ -663,6 +679,9 @@ public class BoostFramework {
 /** @hide */
     public int perfHint(int hint, String userDataStr, int userData1, int userData2) {
         int ret = -1;
+        if (!sIsSupported) {
+            return ret;
+        }
         try {
 // QTI_END: 2018-02-20: Performance: BoostFramework: To Enhance performance.
 // QTI_BEGIN: 2018-03-21: Core: add perf_service into system_process.
@@ -705,6 +724,9 @@ public class BoostFramework {
 // QTI_END: 2021-07-12: Core: perf: Added support for new API.
 // QTI_BEGIN: 2018-11-10: Core: Add perfGetFeedback api support from framework
         int ret = -1;
+        if (!sIsSupported) {
+            return ret;
+        }
         try {
             if (sFeedbackFunc != null) {
 // QTI_END: 2018-11-10: Core: Add perfGetFeedback api support from framework
@@ -721,6 +743,9 @@ public class BoostFramework {
 /** @hide */
     public int perfGetFeedbackExtn(int req, String pkg_name, int numArgs, int... list) {
         int ret = -1;
+        if (!sIsSupported) {
+            return ret;
+        }
         try {
             if (sFeedbackFuncExtn != null) {
                 Object retVal = sFeedbackFuncExtn.invoke(mPerf, req, pkg_name, numArgs, list);
@@ -741,6 +766,9 @@ public class BoostFramework {
 /** @hide */
     public int perfIOPrefetchStart(int pid, String pkgName, String codePath) {
         int ret = -1;
+        if (!sIsSupported) {
+            return ret;
+        }
         try {
             Object retVal = sIOPStart.invoke(mPerf, pid, pkgName, codePath);
             ret = (int) retVal;
@@ -764,6 +792,9 @@ public class BoostFramework {
 /** @hide */
     public int perfIOPrefetchStop() {
         int ret = -1;
+        if (!sIsSupported) {
+            return ret;
+        }
         try {
             Object retVal = sIOPStop.invoke(mPerf);
             ret = (int) retVal;
@@ -785,6 +816,9 @@ public class BoostFramework {
 // QTI_END: 2019-05-30: Core: Perf: Change for AGPE
 // QTI_BEGIN: 2018-10-31: Core: IOP/UXE: This change is related to IOP and UXE Feature.
         int ret = -1;
+        if (!sIsSupported) {
+            return ret;
+        }
         try {
 // QTI_END: 2018-10-31: Core: IOP/UXE: This change is related to IOP and UXE Feature.
 // QTI_BEGIN: 2019-04-15: Core: Moving property to iop hal
@@ -810,6 +844,9 @@ public class BoostFramework {
 /** @hide */
     public String perfUXEngine_trigger(int opcode) {
         String ret = null;
+        if (!sIsSupported) {
+            return ret;
+        }
         try {
 // QTI_END: 2018-10-31: Core: IOP/UXE: This change is related to IOP and UXE Feature.
 // QTI_BEGIN: 2019-04-15: Core: Moving property to iop hal
@@ -831,6 +868,9 @@ public class BoostFramework {
 /** @hide */
     public String perfSyncRequest(int opcode) {
         String ret = null;
+        if (!sIsSupported) {
+            return ret;
+        }
         try {
             if (sPerfSyncRequest == null) {
                 return ret;
@@ -850,6 +890,9 @@ public class BoostFramework {
 // QTI_BEGIN: 2019-01-29: Core: framework: Adding support for perf get prop in Boostframework
     public String perfGetProp(String prop_name, String def_val) {
         String ret = "";
+        if (!sIsSupported) {
+            return def_val;
+        }
         try {
             if (sPerfGetPropFunc != null) {
                 Object retVal = sPerfGetPropFunc.invoke(mPerf, prop_name, def_val);
@@ -868,6 +911,9 @@ public class BoostFramework {
 /** @hide */
     public int perfLockAcqAndRelease(int handle, int duration, int numArgs,int reserveNumArgs, int... list) {
         int ret = -1;
+        if (!sIsSupported) {
+            return ret;
+        }
         try {
             if (sAcqAndReleaseFunc != null) {
                 Object retVal = sAcqAndReleaseFunc.invoke(mPerf, handle, duration, numArgs, reserveNumArgs, list);
@@ -888,6 +934,9 @@ public class BoostFramework {
 
 /** @hide */
     public void perfEvent(int eventId, String pkg_name, int numArgs, int... list) {
+        if (!sIsSupported) {
+            return;
+        }
         try {
             if (sPerfEventFunc != null) {
                 sPerfEventFunc.invoke(mPerf, eventId, pkg_name, numArgs, list);
@@ -916,6 +965,9 @@ public class BoostFramework {
     public int perfHintAcqRel(int handle, int hint, String pkg_name, int duration,
                               int hintType, int numArgs, int... list) {
         int ret = -1;
+        if (!sIsSupported) {
+            return ret;
+        }
         try {
             if (sperfHintAcqRelFunc != null) {
                 Object retVal = sperfHintAcqRelFunc.invoke(mPerf,handle, hint, pkg_name,
@@ -947,6 +999,9 @@ public class BoostFramework {
     public int perfHintRenew(int handle, int hint, String pkg_name, int duration,
                              int hintType, int numArgs, int... list) {
         int ret = -1;
+        if (!sIsSupported) {
+            return ret;
+        }
         try {
             if (sperfHintRenewFunc != null) {
                 Object retVal = sperfHintRenewFunc.invoke(mPerf,handle, hint, pkg_name,
@@ -998,7 +1053,7 @@ public class BoostFramework {
         private static Method sGetAdjustedAnimationClock = null;
 
         private static void initQXPerfFuncs() {
-            if (sQXIsLoaded) return;
+            if (!sIsSupported || sQXIsLoaded) return;
 
             try {
 // QTI_END: 2020-06-15: Core: Pre-rendering AOSP part
@@ -1069,6 +1124,9 @@ public class BoostFramework {
         public static void setFrameInterval(long frameIntervalNanos) {
 // QTI_END: 2020-06-15: Core: Pre-rendering AOSP part
 // QTI_BEGIN: 2022-07-25: Core: Reduce redundant calls of frame interval update
+            if (!sIsSupported) {
+                return;
+            }
             if (sQXIsLoaded) {
                 if (sScrollOptEnable && sSetFrameInterval != null) {
                     try {
@@ -1115,6 +1173,9 @@ public class BoostFramework {
 // QTI_BEGIN: 2022-11-22: Core: Filter multi-layer cases for pre-rendering
         /** @hide */
         public static void disableOptimizer(boolean disabled) {
+            if (!sIsSupported) {
+                return;
+            }
             if (sScrollOptEnable && sDisableOptimizer != null) {
                 try {
                     sDisableOptimizer.invoke(null, disabled);
@@ -1130,6 +1191,9 @@ public class BoostFramework {
 // QTI_END: 2020-06-15: Core: Pre-rendering AOSP part
 // QTI_BEGIN: 2021-05-11: Core: refactor pre-rendering feature for BLASTBufferQueue
         public static void setBLASTBufferQueue(BLASTBufferQueue blastBufferQueue) {
+            if (!sIsSupported) {
+                return;
+            }
             if (sScrollOptEnable && sSetBLASTBufferQueue != null) {
 // QTI_END: 2021-05-11: Core: refactor pre-rendering feature for BLASTBufferQueue
 // QTI_BEGIN: 2020-06-15: Core: Pre-rendering AOSP part
@@ -1147,6 +1211,9 @@ public class BoostFramework {
 
         /** @hide */
         public static void setMotionType(int eventType) {
+            if (!sIsSupported) {
+                return;
+            }
             if (sScrollOptEnable && sSetMotionType != null) {
                 try {
                     sSetMotionType.invoke(null, eventType);
@@ -1158,6 +1225,9 @@ public class BoostFramework {
 
         /** @hide */
         public static void setVsyncTime(long vsyncTimeNanos) {
+            if (!sIsSupported) {
+                return;
+            }
             if (sScrollOptEnable && sSetVsyncTime != null) {
                 try {
                     sSetVsyncTime.invoke(null, vsyncTimeNanos);
@@ -1169,6 +1239,9 @@ public class BoostFramework {
 
         /** @hide */
         public static void setUITaskStatus(boolean running) {
+            if (!sIsSupported) {
+                return;
+            }
             if (sScrollOptEnable && sSetUITaskStatus != null) {
                 try {
                     sSetUITaskStatus.invoke(null, running);
@@ -1180,6 +1253,9 @@ public class BoostFramework {
 
         /** @hide */
         public static void setFlingFlag(int flag) {
+            if (!sIsSupported) {
+                return;
+            }
             if (sScrollOptEnable && sSetFlingFlag != null) {
                 try {
                     sSetFlingFlag.invoke(null, flag);
@@ -1192,6 +1268,9 @@ public class BoostFramework {
         /** @hide */
         public static boolean shouldUseVsync(boolean defaultVsyncFlag) {
             boolean useVsync = defaultVsyncFlag;
+            if (!sIsSupported) {
+                return useVsync;
+            }
             if (sScrollOptEnable && sShouldUseVsync != null) {
                 try {
                     Object retVal = sShouldUseVsync.invoke(null);
@@ -1206,6 +1285,9 @@ public class BoostFramework {
         /** @hide */
         public static long getFrameDelay(long defaultDelay, long lastFrameTimeNanos) {
             long frameDelay = defaultDelay;
+            if (!sIsSupported) {
+                return frameDelay;
+            }
             if (sScrollOptEnable && sGetFrameDelay != null) {
                 try {
                     Object retVal = sGetFrameDelay.invoke(null, lastFrameTimeNanos);
@@ -1220,6 +1302,9 @@ public class BoostFramework {
         /** @hide */
         public static long getAdjustedAnimationClock(long frameTimeNanos) {
             long newFrameTimeNanos = frameTimeNanos;
+            if (!sIsSupported) {
+                return newFrameTimeNanos;
+            }
             if (sScrollOptEnable && sGetAdjustedAnimationClock != null) {
                 try {
                     Object retVal = sGetAdjustedAnimationClock.invoke(null,
