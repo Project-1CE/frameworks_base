@@ -48,4 +48,7 @@
          0: Left side
          1: Right side -->
     <integer name="config_alertSliderLocation">0</integer>
+
+    <!-- Whether device supports QTI Boost Framework -->
+    <bool name="config_supportsBoostFramework">true</bool>
 </resources>
