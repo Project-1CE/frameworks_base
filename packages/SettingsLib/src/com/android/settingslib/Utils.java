@@ -1,3 +1,9 @@
+/*
+ * Changes from Qualcomm Innovation Center are provided under the following license:
+ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ */
+
 package com.android.settingslib;
 
 import static android.app.admin.DevicePolicyResources.Strings.Settings.WORK_PROFILE_USER_LABEL;
@@ -40,6 +46,7 @@ import android.telephony.AccessNetworkConstants;
 import android.telephony.NetworkRegistrationInfo;
 import android.telephony.ServiceState;
 import android.telephony.TelephonyManager;
+import android.net.wifi.ScanResult;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -105,6 +112,14 @@ public class Utils {
             com.android.internal.R.drawable.ic_wifi_6_signal_2,
             com.android.internal.R.drawable.ic_wifi_6_signal_3,
             com.android.internal.R.drawable.ic_wifi_6_signal_4
+    };
+
+    static final int[] WIFI_7_PIE = {
+            com.android.internal.R.drawable.ic_wifi_7_signal_0,
+            com.android.internal.R.drawable.ic_wifi_7_signal_1,
+            com.android.internal.R.drawable.ic_wifi_7_signal_2,
+            com.android.internal.R.drawable.ic_wifi_7_signal_3,
+            com.android.internal.R.drawable.ic_wifi_7_signal_4
     };
 
     public static void updateLocationEnabled(Context context, boolean enabled, int userId,
@@ -263,6 +278,8 @@ public class Utils {
                             statusString = res.getString(R.string.battery_info_status_charging);
                             break;
                     }
+                } else if (batteryStatus.isPluggedInDock()) {
+                    statusString = res.getString(R.string.battery_info_status_charging_dock);
                 } else {
                     statusString = res.getString(R.string.battery_info_status_charging_wireless);
                 }
@@ -330,8 +347,16 @@ public class Utils {
 
     @ColorInt
     public static int getColorAttrDefaultColor(Context context, int attr) {
+        return getColorAttrDefaultColor(context, attr, 0);
+    }
+
+    /**
+     * Get color styled attribute {@code attr}, default to {@code defValue} if not found.
+     */
+    @ColorInt
+    public static int getColorAttrDefaultColor(Context context, int attr, @ColorInt int defValue) {
         TypedArray ta = context.obtainStyledAttributes(new int[]{attr});
-        @ColorInt int colorAccent = ta.getColor(0, 0);
+        @ColorInt int colorAccent = ta.getColor(0, defValue);
         ta.recycle();
         return colorAccent;
     }
@@ -495,12 +520,14 @@ public class Utils {
         if (showX) return SHOW_X_WIFI_PIE[level];
 
         switch (standard) {
-            case 4:
+            case ScanResult.WIFI_STANDARD_11N:
                 return WIFI_4_PIE[level];
-            case 5:
+            case ScanResult.WIFI_STANDARD_11AC:
                 return WIFI_5_PIE[level];
-            case 6:
+            case ScanResult.WIFI_STANDARD_11AX:
                 return WIFI_6_PIE[level];
+            case ScanResult.WIFI_STANDARD_11BE:
+                return WIFI_7_PIE[level];
             default:
                 return WIFI_PIE[level];
        }
@@ -655,6 +682,9 @@ public class Utils {
     /**
      * Returns the WifiInfo for the underlying WiFi network of the VCN network, returns null if the
      * input NetworkCapabilities is not for a VCN network with underlying WiFi network.
+     *
+     * TODO(b/238425913): Move this method to be inside systemui not settingslib once we've migrated
+     *   off of {@link WifiStatusTracker} and {@link NetworkControllerImpl}.
      *
      * @param networkCapabilities NetworkCapabilities of the network.
      */

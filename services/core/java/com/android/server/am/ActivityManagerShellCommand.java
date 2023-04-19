@@ -183,7 +183,7 @@ final class ActivityManagerShellCommand extends ShellCommand {
     private boolean mAsync;
     private BroadcastOptions mBroadcastOptions;
     private boolean mShowSplashScreen;
-    private boolean mDismissKeyguardIfInsecure;
+    private boolean mDismissKeyguard;
 
     final boolean mDumping;
 
@@ -248,6 +248,8 @@ final class ActivityManagerShellCommand extends ShellCommand {
                     return runForceStop(pw);
                 case "stop-app":
                     return runStopApp(pw);
+                case "clear-recent-apps":
+                    return runClearRecentApps(pw);
                 case "fgs-notification-rate-limit":
                     return runFgsNotificationRateLimit(pw);
                 case "crash":
@@ -442,8 +444,8 @@ final class ActivityManagerShellCommand extends ShellCommand {
                     mAsync = true;
                 } else if (opt.equals("--splashscreen-show-icon")) {
                     mShowSplashScreen = true;
-                } else if (opt.equals("--dismiss-keyguard-if-insecure")) {
-                    mDismissKeyguardIfInsecure = true;
+                } else if (opt.equals("--dismiss-keyguard")) {
+                    mDismissKeyguard = true;
                 } else {
                     return false;
                 }
@@ -588,11 +590,11 @@ final class ActivityManagerShellCommand extends ShellCommand {
                 }
                 options.setSplashScreenStyle(SplashScreen.SPLASH_SCREEN_STYLE_ICON);
             }
-            if (mDismissKeyguardIfInsecure) {
+            if (mDismissKeyguard) {
                 if (options == null) {
                     options = ActivityOptions.makeBasic();
                 }
-                options.setDismissKeyguardIfInsecure();
+                options.setDismissKeyguard();
             }
             if (mWaitOption) {
                 result = mInternal.startActivityAndWait(null, SHELL_PACKAGE_NAME, null, intent,
@@ -1189,6 +1191,11 @@ final class ActivityManagerShellCommand extends ShellCommand {
             }
         }
         mInterface.stopAppForUser(getNextArgRequired(), userId);
+        return 0;
+    }
+
+    int runClearRecentApps(PrintWriter pw) throws RemoteException {
+        mTaskInterface.removeAllVisibleRecentTasks();
         return 0;
     }
 

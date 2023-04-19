@@ -12,6 +12,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Changes from Qualcomm Innovation Center are provided under the following license:
+ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ *
  */
 package com.android.server.audio;
 
@@ -380,7 +385,9 @@ public class AudioDeviceInventory {
                         makeLeAudioDeviceUnavailable(address, btInfo.mAudioSystemDevice);
                     } else if (switchToAvailable) {
                         makeLeAudioDeviceAvailable(address, BtHelper.getName(btInfo.mDevice),
-                                streamType, btInfo.mAudioSystemDevice, "onSetBtActiveDevice");
+                                streamType, btInfo.mVolume == -1 ? -1 : btInfo.mVolume * 10,
+                                btInfo.mAudioSystemDevice,
+                                "onSetBtActiveDevice");
                     }
                     break;
                 default: throw new IllegalArgumentException("Invalid profile "
@@ -509,6 +516,12 @@ public class AudioDeviceInventory {
     /*package*/ void onMakeA2dpDeviceUnavailableNow(String address, int a2dpCodec) {
         synchronized (mDevicesLock) {
             makeA2dpDeviceUnavailableNow(address, a2dpCodec);
+        }
+    }
+
+    /*package*/ void onMakeLeAudioUnavailableNow(String address, int device) {
+        synchronized (mDevicesLock) {
+            makeLeAudioDeviceUnavailable(address, device);
         }
     }
 
@@ -892,15 +905,11 @@ public class AudioDeviceInventory {
     }
 
      /*package*/ void disconnectLeAudio(int device) {
-        if (device != AudioSystem.DEVICE_OUT_BLE_HEADSET
-                && device != AudioSystem.DEVICE_OUT_BLE_BROADCAST) {
-            Log.e(TAG, "disconnectLeAudio: Can't disconnect not LE Audio device " + device);
-            return;
-        }
-
         synchronized (mDevicesLock) {
             final ArraySet<String> toRemove = new ArraySet<>();
-            // Disconnect ALL DEVICE_OUT_BLE_HEADSET or DEVICE_OUT_BLE_BROADCAST devices
+            /* Disconnect ALL DEVICE_OUT_BLE_HEADSET,
+             *  DEVICE_IN_BLE_HEADSET or DEVICE_OUT_BLE_BROADCAST devices
+             */
             mConnectedDevices.values().forEach(deviceInfo -> {
                 if (deviceInfo.mDeviceType == device) {
                     toRemove.add(deviceInfo.mDeviceAddress);
@@ -909,17 +918,22 @@ public class AudioDeviceInventory {
             new MediaMetrics.Item(mMetricsId + "disconnectLeAudio")
                     .record();
             if (toRemove.size() > 0) {
-                final int delay = checkSendBecomingNoisyIntentInt(device, 0,
+                final int delay;
+                if (device != AudioSystem.DEVICE_IN_BLE_HEADSET) {
+                    delay = checkSendBecomingNoisyIntentInt(device, 0,
                         AudioSystem.DEVICE_NONE);
+                } else {
+                    delay = 0;
+                }
                 toRemove.stream().forEach(deviceAddress ->
-                        makeLeAudioDeviceUnavailable(deviceAddress, device)
-                );
+                         makeLeAudioUnavailableLater(deviceAddress, delay, device));
             }
         }
     }
 
     /*package*/ void disconnectLeAudioUnicast() {
         disconnectLeAudio(AudioSystem.DEVICE_OUT_BLE_HEADSET);
+        disconnectLeAudio(AudioSystem.DEVICE_IN_BLE_HEADSET);
     }
 
     /*package*/ void disconnectLeAudioBroadcast() {
@@ -1178,6 +1192,15 @@ public class AudioDeviceInventory {
         mDeviceBroker.setA2dpTimeout(address, a2dpCodec, delayMs);
     }
 
+    @GuardedBy("mDevicesLock")
+    private void makeLeAudioUnavailableLater(String address, int delayMs, int device) {
+        final String deviceKey =
+                DeviceInfo.makeDeviceListKey(device, address);
+        // the device will be made unavailable later, so consider it disconnected right away
+        mConnectedDevices.remove(deviceKey);
+        // send the delayed message to make the device unavailable later
+        mDeviceBroker.setLeAudioTimeout(address, device, delayMs);
+    }
 
     @GuardedBy("mDevicesLock")
     private void makeA2dpSrcAvailable(String address, int a2dpCodec) {
@@ -1252,9 +1275,25 @@ public class AudioDeviceInventory {
                 .record();
     }
 
+    /**
+     * Returns whether a device of type DEVICE_OUT_HEARING_AID is connected.
+     * Visibility by APM plays no role
+     * @return true if a DEVICE_OUT_HEARING_AID is connected, false otherwise.
+     */
+    boolean isHearingAidConnected() {
+        synchronized (mDevicesLock) {
+            for (DeviceInfo di : mConnectedDevices.values()) {
+                if (di.mDeviceType == AudioSystem.DEVICE_OUT_HEARING_AID) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
     @GuardedBy("mDevicesLock")
-    private void makeLeAudioDeviceAvailable(String address, String name, int streamType, int device,
-            String eventSource) {
+    private void makeLeAudioDeviceAvailable(String address, String name, int streamType,
+            int volumeIndex, int device, String eventSource) {
         if (device != AudioSystem.DEVICE_NONE) {
             /* Audio Policy sees Le Audio similar to A2DP. Let's make sure
              * AUDIO_POLICY_FORCE_NO_BT_A2DP is not set
@@ -1275,7 +1314,9 @@ public class AudioDeviceInventory {
             return;
         }
 
-        final int leAudioVolIndex = mDeviceBroker.getVssVolumeForDevice(streamType, device);
+        final int leAudioVolIndex = (volumeIndex == -1)
+                ? mDeviceBroker.getVssVolumeForDevice(streamType, device)
+                : volumeIndex;
         final int maxIndex = mDeviceBroker.getMaxVssVolumeForStream(streamType);
         mDeviceBroker.postSetLeAudioVolumeIndex(leAudioVolIndex, maxIndex, streamType);
         mDeviceBroker.postApplyVolumeOnDevice(streamType, device, "makeLeAudioDeviceAvailable");

@@ -40,7 +40,6 @@ import static com.android.internal.annotations.VisibleForTesting.Visibility.PACK
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.RemoteServiceException.BadForegroundServiceNotificationException;
-import android.app.RemoteServiceException.CannotDeliverBroadcastException;
 import android.app.RemoteServiceException.CannotPostForegroundServiceNotificationException;
 import android.app.RemoteServiceException.CrashedByAdbException;
 import android.app.RemoteServiceException.ForegroundServiceDidNotStartInTimeException;
@@ -535,9 +534,8 @@ public final class ActivityThread extends ClientTransactionHandler
         // A reusable token for other purposes, e.g. content capture, translation. It shouldn't be
         // used without security checks
         public IBinder shareableActivityToken;
-        // The token of the initial TaskFragment that embedded this activity. Do not rely on it
-        // after creation because the activity could be reparented.
-        @Nullable public IBinder mInitialTaskFragmentToken;
+        // The token of the TaskFragment that embedded this activity.
+        @Nullable public IBinder mTaskFragmentToken;
         int ident;
         @UnsupportedAppUsage
         Intent intent;
@@ -621,7 +619,7 @@ public final class ActivityThread extends ClientTransactionHandler
                 List<ReferrerIntent> pendingNewIntents, ActivityOptions activityOptions,
                 boolean isForward, ProfilerInfo profilerInfo, ClientTransactionHandler client,
                 IBinder assistToken, IBinder shareableActivityToken, boolean launchedFromBubble,
-                IBinder initialTaskFragmentToken) {
+                IBinder taskFragmentToken) {
             this.token = token;
             this.assistToken = assistToken;
             this.shareableActivityToken = shareableActivityToken;
@@ -642,7 +640,7 @@ public final class ActivityThread extends ClientTransactionHandler
                     compatInfo);
             mActivityOptions = activityOptions;
             mLaunchedFromBubble = launchedFromBubble;
-            mInitialTaskFragmentToken = initialTaskFragmentToken;
+            mTaskFragmentToken = taskFragmentToken;
             init();
         }
 
@@ -1976,9 +1974,6 @@ public final class ActivityThread extends ClientTransactionHandler
         switch (typeId) {
             case ForegroundServiceDidNotStartInTimeException.TYPE_ID:
                 throw generateForegroundServiceDidNotStartInTimeException(message, extras);
-
-            case CannotDeliverBroadcastException.TYPE_ID:
-                throw new CannotDeliverBroadcastException(message);
 
             case CannotPostForegroundServiceNotificationException.TYPE_ID:
                 throw new CannotPostForegroundServiceNotificationException(message);
@@ -3424,47 +3419,17 @@ public final class ActivityThread extends ClientTransactionHandler
         }
     }
 
-    /**
-     * Returns {@code true} if the {@link android.app.ActivityManager.ProcessState} of the current
-     * process is cached.
-     */
-    @Override
-    @VisibleForTesting
-    public boolean isCachedProcessState() {
-        synchronized (mAppThread) {
-            return mLastProcessState >= ActivityManager.PROCESS_STATE_CACHED_ACTIVITY;
-        }
-    }
-
     @Override
     public void updateProcessState(int processState, boolean fromIpc) {
-        final boolean wasCached;
         synchronized (mAppThread) {
             if (mLastProcessState == processState) {
                 return;
             }
-            wasCached = isCachedProcessState();
             mLastProcessState = processState;
             updateVmProcessState(processState);
             if (localLOGV) {
                 Slog.i(TAG, "******************* PROCESS STATE CHANGED TO: " + processState
                         + (fromIpc ? " (from ipc" : ""));
-            }
-        }
-
-        // Handle the pending configuration if the process state is changed from cached to
-        // non-cached. Except the case where there is a launching activity because the
-        // LaunchActivityItem will handle it.
-        if (wasCached && !isCachedProcessState() && mNumLaunchingActivities.get() == 0) {
-            final Configuration pendingConfig =
-                    mConfigurationController.getPendingConfiguration(false /* clearPending */);
-            if (pendingConfig == null) {
-                return;
-            }
-            if (Looper.myLooper() == mH.getLooper()) {
-                handleConfigurationChanged(pendingConfig);
-            } else {
-                sendMessage(H.CONFIGURATION_CHANGED, pendingConfig);
             }
         }
     }
@@ -4193,13 +4158,15 @@ public final class ActivityThread extends ClientTransactionHandler
     private void schedulePauseWithUserLeavingHint(ActivityClientRecord r) {
         final ClientTransaction transaction = ClientTransaction.obtain(this.mAppThread, r.token);
         transaction.setLifecycleStateRequest(PauseActivityItem.obtain(r.activity.isFinishing(),
-                /* userLeaving */ true, r.activity.mConfigChangeFlags, /* dontReport */ false));
+                /* userLeaving */ true, r.activity.mConfigChangeFlags, /* dontReport */ false,
+                /* autoEnteringPip */ false));
         executeTransaction(transaction);
     }
 
     private void scheduleResume(ActivityClientRecord r) {
         final ClientTransaction transaction = ClientTransaction.obtain(this.mAppThread, r.token);
-        transaction.setLifecycleStateRequest(ResumeActivityItem.obtain(/* isForward */ false));
+        transaction.setLifecycleStateRequest(ResumeActivityItem.obtain(/* isForward */ false,
+                /* shouldSendCompatFakeFocus */ false));
         executeTransaction(transaction);
     }
 
@@ -4826,7 +4793,7 @@ public final class ActivityThread extends ClientTransactionHandler
 
     @Override
     public void handleResumeActivity(ActivityClientRecord r, boolean finalStateRequest,
-            boolean isForward, String reason) {
+            boolean isForward, boolean shouldSendCompatFakeFocus, String reason) {
         // If we are getting ready to gc after going to the background, well
         // we are back active so skip it.
         unscheduleGcIdler();
@@ -4933,6 +4900,16 @@ public final class ActivityThread extends ClientTransactionHandler
             if (r.activity.mVisibleFromClient) {
                 r.activity.makeVisible();
             }
+
+            if (shouldSendCompatFakeFocus) {
+                // Attaching to a window is asynchronous with the activity being resumed,
+                // so it's possible we will need to send a fake focus event after attaching
+                if (impl != null) {
+                    impl.dispatchCompatFakeFocus();
+                } else {
+                    r.window.getDecorView().fakeFocusAfterAttachingToWindow();
+                }
+            }
         }
 
         r.nextIdle = mNewActivities;
@@ -4983,12 +4960,18 @@ public final class ActivityThread extends ClientTransactionHandler
 
     @Override
     public void handlePauseActivity(ActivityClientRecord r, boolean finished, boolean userLeaving,
-            int configChanges, PendingTransactionActions pendingActions, String reason) {
+            int configChanges, boolean autoEnteringPip, PendingTransactionActions pendingActions,
+            String reason) {
         if (userLeaving) {
             performUserLeavingActivity(r);
         }
 
         r.activity.mConfigChangeFlags |= configChanges;
+        if (autoEnteringPip) {
+            // Set mIsInPictureInPictureMode earlier in case of auto-enter-pip, see also
+            // {@link Activity#enterPictureInPictureMode(PictureInPictureParams)}.
+            r.activity.mIsInPictureInPictureMode = true;
+        }
         performPauseActivity(r, finished, reason, pendingActions);
 
         // Make sure any pending writes are now committed.
@@ -5276,6 +5259,11 @@ public final class ActivityThread extends ClientTransactionHandler
                 r.setState(ON_START);
             }
         }
+    }
+
+    @Override
+    public void reportRefresh(ActivityClientRecord r) {
+        ActivityClient.getInstance().activityRefreshed(r.token);
     }
 
     private void handleSetCoreSettings(Bundle coreSettings) {
@@ -5894,20 +5882,20 @@ public final class ActivityThread extends ClientTransactionHandler
 
         final boolean movedToDifferentDisplay = isDifferentDisplay(activity.getDisplayId(),
                 displayId);
-        final Configuration currentConfig = activity.mCurrentConfig;
-        final int diff = currentConfig.diffPublicOnly(newConfig);
-        final boolean hasPublicConfigChange = diff != 0;
+        final Configuration currentResConfig = activity.getResources().getConfiguration();
+        final int diff = currentResConfig.diffPublicOnly(newConfig);
+        final boolean hasPublicResConfigChange = diff != 0;
         final ActivityClientRecord r = getActivityClient(activityToken);
         // TODO(b/173090263): Use diff instead after the improvement of AssetManager and
         // ResourcesImpl constructions.
-        final boolean shouldUpdateResources = hasPublicConfigChange
-                || shouldUpdateResources(activityToken, currentConfig, newConfig, amOverrideConfig,
-                movedToDifferentDisplay, hasPublicConfigChange);
-        final boolean shouldReportChange = shouldReportChange(diff, currentConfig, newConfig,
+        final boolean shouldUpdateResources = hasPublicResConfigChange
+                || shouldUpdateResources(activityToken, currentResConfig, newConfig,
+                amOverrideConfig, movedToDifferentDisplay, hasPublicResConfigChange);
+        final boolean shouldReportChange = shouldReportChange(activity.mCurrentConfig, newConfig,
                 r != null ? r.mSizeConfigurations : null,
                 activity.mActivityInfo.getRealConfigChanged());
         // Nothing significant, don't proceed with updating and reporting.
-        if (!shouldUpdateResources) {
+        if (!shouldUpdateResources && !shouldReportChange) {
             return null;
         }
 
@@ -5927,9 +5915,6 @@ public final class ActivityThread extends ClientTransactionHandler
                 amOverrideConfig, contextThemeWrapperOverrideConfig);
         mResourcesManager.updateResourcesForActivity(activityToken, finalOverrideConfig, displayId);
 
-        activity.mConfigChangeFlags = 0;
-        activity.mCurrentConfig = new Configuration(newConfig);
-
         // Apply the ContextThemeWrapper override if necessary.
         // NOTE: Make sure the configurations are not modified, as they are treated as immutable
         // in many places.
@@ -5940,8 +5925,10 @@ public final class ActivityThread extends ClientTransactionHandler
             activity.dispatchMovedToDisplay(displayId, configToReport);
         }
 
+        activity.mConfigChangeFlags = 0;
         if (shouldReportChange) {
             activity.mCalled = false;
+            activity.mCurrentConfig = new Configuration(newConfig);
             activity.onConfigurationChanged(configToReport);
             if (!activity.mCalled) {
                 throw new SuperNotCalledException("Activity " + activity.getLocalClassName() +
@@ -5956,8 +5943,6 @@ public final class ActivityThread extends ClientTransactionHandler
      * Returns {@code true} if {@link Activity#onConfigurationChanged(Configuration)} should be
      * dispatched.
      *
-     * @param publicDiff Usually computed by {@link Configuration#diffPublicOnly(Configuration)}.
-     *                   This parameter is to prevent we compute it again.
      * @param currentConfig The current configuration cached in {@link Activity#mCurrentConfig}.
      *                      It is {@code null} before the first config update from the server side.
      * @param newConfig The updated {@link Configuration}
@@ -5966,9 +5951,10 @@ public final class ActivityThread extends ClientTransactionHandler
      * @return {@code true} if the config change should be reported to the Activity
      */
     @VisibleForTesting
-    public static boolean shouldReportChange(int publicDiff, @Nullable Configuration currentConfig,
+    public static boolean shouldReportChange(@Nullable Configuration currentConfig,
             @NonNull Configuration newConfig, @Nullable SizeConfigurationBuckets sizeBuckets,
             int handledConfigChanges) {
+        final int publicDiff = currentConfig.diffPublicOnly(newConfig);
         // Don't report the change if there's no public diff between current and new config.
         if (publicDiff == 0) {
             return false;

@@ -39,7 +39,7 @@ import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.keyguard.dagger.KeyguardBouncerScope;
 import com.android.systemui.R;
-import com.android.systemui.statusbar.phone.ShadeController;
+import com.android.systemui.shade.ShadeController;
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.ConfigurationController.ConfigurationListener;
 import com.android.systemui.util.EmergencyDialerConstants;
@@ -152,7 +152,7 @@ public class EmergencyButtonController extends ViewController<EmergencyButton> {
             mPowerManager.userActivity(SystemClock.uptimeMillis(), true);
         }
         mActivityTaskManager.stopSystemLockTaskMode();
-        mShadeController.collapsePanel(false);
+        mShadeController.collapseShade(false);
         if (mTelecomManager != null && mTelecomManager.isInCall()) {
             mTelecomManager.showInCallScreen(false);
             if (mEmergencyButtonCallback != null) {

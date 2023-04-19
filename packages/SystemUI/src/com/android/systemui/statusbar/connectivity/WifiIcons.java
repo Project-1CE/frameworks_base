@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Changes from Qualcomm Innovation Center are provided under the following license:
+ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
 package com.android.systemui.statusbar.connectivity;
@@ -23,7 +27,7 @@ import com.android.settingslib.SignalIcon.IconGroup;
 /** */
 public class WifiIcons {
 
-    static final int[] WIFI_FULL_ICONS = {
+    public static final int[] WIFI_FULL_ICONS = {
             com.android.internal.R.drawable.ic_wifi_signal_0,
             com.android.internal.R.drawable.ic_wifi_signal_1,
             com.android.internal.R.drawable.ic_wifi_signal_2,
@@ -31,7 +35,7 @@ public class WifiIcons {
             com.android.internal.R.drawable.ic_wifi_signal_4
     };
 
-    private static final int[] WIFI_NO_INTERNET_ICONS = {
+    public static final int[] WIFI_NO_INTERNET_ICONS = {
             R.drawable.ic_no_internet_wifi_signal_0,
             R.drawable.ic_no_internet_wifi_signal_1,
             R.drawable.ic_no_internet_wifi_signal_2,
@@ -87,6 +91,22 @@ public class WifiIcons {
             R.drawable.ic_qs_wifi_6_4
     };
 
+    static final int[] WIFI_7_FULL_ICONS = {
+            com.android.internal.R.drawable.ic_wifi_7_signal_0,
+            com.android.internal.R.drawable.ic_wifi_7_signal_1,
+            com.android.internal.R.drawable.ic_wifi_7_signal_2,
+            com.android.internal.R.drawable.ic_wifi_7_signal_3,
+            com.android.internal.R.drawable.ic_wifi_7_signal_4
+    };
+
+    private static final int[] WIFI_7_NO_INTERNET_ICONS = {
+            R.drawable.ic_qs_wifi_7_0,
+            R.drawable.ic_qs_wifi_7_1,
+            R.drawable.ic_qs_wifi_7_2,
+            R.drawable.ic_qs_wifi_7_3,
+            R.drawable.ic_qs_wifi_7_4
+    };
+
     public static final int[][] QS_WIFI_SIGNAL_STRENGTH = {
             WIFI_NO_INTERNET_ICONS,
             WIFI_FULL_ICONS
@@ -115,9 +135,16 @@ public class WifiIcons {
 
     static final int[][] WIFI_6_SIGNAL_STRENGTH = QS_WIFI_6_SIGNAL_STRENGTH;
 
+    public static final int[][] QS_WIFI_7_SIGNAL_STRENGTH = {
+            WIFI_7_NO_INTERNET_ICONS,
+            WIFI_7_FULL_ICONS
+    };
+
+    static final int[][] WIFI_7_SIGNAL_STRENGTH = QS_WIFI_7_SIGNAL_STRENGTH;
+
     public static final int QS_WIFI_DISABLED = com.android.internal.R.drawable.ic_wifi_signal_0;
     public static final int QS_WIFI_NO_NETWORK = com.android.internal.R.drawable.ic_wifi_signal_0;
-    static final int WIFI_NO_NETWORK = QS_WIFI_NO_NETWORK;
+    public static final int WIFI_NO_NETWORK = QS_WIFI_NO_NETWORK;
 
     static final int WIFI_LEVEL_COUNT = WIFI_SIGNAL_STRENGTH[0].length;
 

@@ -1759,6 +1759,9 @@ class SettingsProtoDumpUtil {
                 Settings.Secure.ACCESSIBILITY_HIGH_TEXT_CONTRAST_ENABLED,
                 SecureSettingsProto.Accessibility.HIGH_TEXT_CONTRAST_ENABLED);
         dumpSetting(s, p,
+                Settings.Secure.CONTRAST_LEVEL,
+                SecureSettingsProto.Accessibility.CONTRAST_LEVEL);
+        dumpSetting(s, p,
                 Settings.Secure.FONT_WEIGHT_ADJUSTMENT,
                 SecureSettingsProto.FONT_WEIGHT_ADJUSTMENT);
         dumpSetting(s, p,
@@ -2360,6 +2363,12 @@ class SettingsProtoDumpUtil {
                 Settings.Secure.POWER_MENU_LOCKED_SHOW_CONTENT,
                 SecureSettingsProto.PowerMenuPrivacy.SHOW);
         p.end(powerMenuPrivacyToken);
+
+        final long extraLowPowerModeToken = p.start(SecureSettingsProto.EXTRA_LOW_POWER_MODE);
+        dumpSetting(s, p,
+                Settings.Secure.EXTRA_AUTOMATIC_POWER_SAVE_MODE,
+                SecureSettingsProto.ExtraLowPowerMode.EXTRA_AUTOMATIC_POWER_SAVE_MODE);
+        p.end(extraLowPowerModeToken);
 
         final long printServiceToken = p.start(SecureSettingsProto.PRINT_SERVICE);
         dumpSetting(s, p,

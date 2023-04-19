@@ -12,7 +12,12 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Changes from Qualcomm Innovation Center are provided under the following license:
+ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
+
 package com.android.systemui.statusbar.connectivity;
 
 import static android.net.wifi.WifiManager.TrafficStateCallback.DATA_ACTIVITY_IN;
@@ -25,6 +30,7 @@ import android.net.NetworkCapabilities;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.text.Html;
+import android.net.wifi.ScanResult;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.Preconditions;
@@ -53,6 +59,7 @@ public class WifiSignalController extends SignalController<WifiState, IconGroup>
     private final IconGroup mWifi4IconGroup;
     private final IconGroup mWifi5IconGroup;
     private final IconGroup mWifi6IconGroup;
+    private final IconGroup mWifi7IconGroup;
 
     public WifiSignalController(
             Context context,
@@ -114,6 +121,18 @@ public class WifiSignalController extends SignalController<WifiState, IconGroup>
                 "Wi-Fi 6 Icons",
                 WifiIcons.WIFI_6_SIGNAL_STRENGTH,
                 WifiIcons.QS_WIFI_6_SIGNAL_STRENGTH,
+                AccessibilityContentDescriptions.WIFI_CONNECTION_STRENGTH,
+                WifiIcons.WIFI_NO_NETWORK,
+                WifiIcons.QS_WIFI_NO_NETWORK,
+                WifiIcons.WIFI_NO_NETWORK,
+                WifiIcons.QS_WIFI_NO_NETWORK,
+                AccessibilityContentDescriptions.WIFI_NO_CONNECTION
+                );
+
+        mWifi7IconGroup = new IconGroup(
+                "Wi-Fi 7 Icons",
+                WifiIcons.WIFI_7_SIGNAL_STRENGTH,
+                WifiIcons.QS_WIFI_7_SIGNAL_STRENGTH,
                 AccessibilityContentDescriptions.WIFI_CONNECTION_STRENGTH,
                 WifiIcons.WIFI_NO_NETWORK,
                 WifiIcons.QS_WIFI_NO_NETWORK,
@@ -233,12 +252,14 @@ public class WifiSignalController extends SignalController<WifiState, IconGroup>
 
 
     private void updateIconGroup() {
-	if (mCurrentState.wifiStandard == 4) {
+	if (mCurrentState.wifiStandard == ScanResult.WIFI_STANDARD_11N) {
             mCurrentState.iconGroup = mWifi4IconGroup;
-        } else if (mCurrentState.wifiStandard == 5) {
+        } else if (mCurrentState.wifiStandard == ScanResult.WIFI_STANDARD_11AC) {
             mCurrentState.iconGroup = mWifi5IconGroup;
-        } else if (mCurrentState.wifiStandard == 6) {
+        } else if (mCurrentState.wifiStandard == ScanResult.WIFI_STANDARD_11AX) {
             mCurrentState.iconGroup = mWifi6IconGroup;
+        } else if (mCurrentState.wifiStandard == ScanResult.WIFI_STANDARD_11BE) {
+            mCurrentState.iconGroup = mWifi7IconGroup;
         } else {
             mCurrentState.iconGroup = mDefaultWifiIconGroup;
         }
@@ -292,7 +313,6 @@ public class WifiSignalController extends SignalController<WifiState, IconGroup>
         mCurrentState.connected = mWifiTracker.connected;
         mCurrentState.ssid = mWifiTracker.ssid;
         mCurrentState.rssi = mWifiTracker.rssi;
-        boolean levelChanged = mCurrentState.level != mWifiTracker.level;
         mCurrentState.level = mWifiTracker.level;
         mCurrentState.statusLabel = mWifiTracker.statusLabel;
         mCurrentState.isCarrierMerged = mWifiTracker.isCarrierMerged;
@@ -300,9 +320,6 @@ public class WifiSignalController extends SignalController<WifiState, IconGroup>
         mCurrentState.wifiStandard = mWifiTracker.wifiStandard;
         updateIconGroup();
 
-        if (levelChanged) {
-            mNetworkController.notifyWifiLevelChange(mCurrentState.level);
-        }
     }
 
     boolean isCarrierMergedWifi(int subId) {

@@ -50,13 +50,13 @@
   </string-array>
   <string-array name="hdcp_checking_titles">
     <item msgid="2377230797542526134">"Ешқашан тексермеу"</item>
-    <item msgid="3919638466823112484">"DRM (авторлық құқықты техникалық қорғау) мазмұнын ғана тексеру"</item>
+    <item msgid="3919638466823112484">"DRM (авторлық құқықты техникалық қорғау) контентін ғана тексеру"</item>
     <item msgid="9048424957228926377">"Әрқашан тексеру"</item>
   </string-array>
   <string-array name="hdcp_checking_summaries">
-    <item msgid="4045840870658484038">"Ешқашан HDCP (жоғары кең жолақты цифрлық мазмұн қорғаушы) тексерулерін қолданбаңыз"</item>
-    <item msgid="8254225038262324761">"HDCP тексерісін DRM мазмұны үшін ғана қолдану"</item>
-    <item msgid="6421717003037072581">"Әрқашан HDCP (жоғары кең жолақты цифрлық мазмұн қорғаушы) тексерулерін қолданыңыз"</item>
+    <item msgid="4045840870658484038">"Ешқашан HDCP (жоғары кең жолақты цифрлық контент қорғаушы) тексерулерін қолданбаңыз"</item>
+    <item msgid="8254225038262324761">"HDCP тексерісін DRM контенті үшін ғана қолдану"</item>
+    <item msgid="6421717003037072581">"Әрқашан HDCP (жоғары кең жолақты цифрлық контент қорғаушы) тексерулерін қолданыңыз"</item>
   </string-array>
   <string-array name="bt_hci_snoop_log_entries">
     <item msgid="695678520785580527">"Өшірулі"</item>
@@ -92,6 +92,8 @@
     <item msgid="1049450003868150455">"<xliff:g id="QUALCOMM">Qualcomm®</xliff:g> <xliff:g id="APTX">aptX™</xliff:g> аудиокодегі"</item>
     <item msgid="2908219194098827570">"<xliff:g id="QUALCOMM">Qualcomm®</xliff:g> <xliff:g id="APTX_HD">aptX™ HD</xliff:g> аудиокодегі"</item>
     <item msgid="3825367753087348007">"LDAC"</item>
+    <item msgid="328951785723550863">"L34C"</item>
+    <item msgid="506175145534048710">"Opus"</item>
     <item msgid="8711430979086781450">"<xliff:g id="QUALCOMM">Qualcomm®</xliff:g> <xliff:g id="APTX_ADAPTIVE">aptX™ Adaptive</xliff:g> аудиокодегі"</item>
     <item msgid="6486050771049225">"<xliff:g id="QUALCOMM">Qualcomm®</xliff:g> <xliff:g id="APTX_TWSP">aptX™ TWS+</xliff:g> аудиокодегі"</item>
   </string-array>
@@ -102,6 +104,8 @@
     <item msgid="8627333814413492563">"<xliff:g id="QUALCOMM">Qualcomm®</xliff:g> <xliff:g id="APTX">aptX™</xliff:g> аудиокодегі"</item>
     <item msgid="3517061573669307965">"<xliff:g id="QUALCOMM">Qualcomm®</xliff:g> <xliff:g id="APTX_HD">aptX™ HD</xliff:g> аудиокодегі"</item>
     <item msgid="2553206901068987657">"LDAC"</item>
+    <item msgid="3940992993241040716">"L34C"</item>
+    <item msgid="7940970833006181407">"Opus"</item>
     <item msgid="102988075927343894">"<xliff:g id="QUALCOMM">Qualcomm®</xliff:g> <xliff:g id="APTX_ADAPTIVE">aptX™ Adaptive</xliff:g> аудиокодегі"</item>
     <item msgid="6486050771049481">"<xliff:g id="QUALCOMM">Qualcomm®</xliff:g> <xliff:g id="APTX_TWSP">aptX™ TWS+</xliff:g> аудиокодегі"</item>
   </string-array>

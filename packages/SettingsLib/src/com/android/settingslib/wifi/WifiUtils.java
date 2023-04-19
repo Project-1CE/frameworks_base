@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Changes from Qualcomm Innovation Center are provided under the following license:
+ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
 package com.android.settingslib.wifi;
@@ -125,6 +129,14 @@ public class WifiUtils {
             com.android.internal.R.drawable.ic_wifi_6_signal_2,
             com.android.internal.R.drawable.ic_wifi_6_signal_3,
             com.android.internal.R.drawable.ic_wifi_6_signal_4
+    };
+
+    static final int[] WIFI_7_PIE = {
+            com.android.internal.R.drawable.ic_wifi_7_signal_0,
+            com.android.internal.R.drawable.ic_wifi_7_signal_1,
+            com.android.internal.R.drawable.ic_wifi_7_signal_2,
+            com.android.internal.R.drawable.ic_wifi_7_signal_3,
+            com.android.internal.R.drawable.ic_wifi_7_signal_4
     };
 
     public static String buildLoggingSummary(AccessPoint accessPoint, WifiConfiguration config) {
@@ -387,12 +399,14 @@ public class WifiUtils {
         }
         if (noInternet) return NO_INTERNET_WIFI_PIE[wifiLevel];
         switch (standard) {
-            case 4:
+            case ScanResult.WIFI_STANDARD_11N:
                 return WIFI_4_PIE[wifiLevel];
-            case 5:
+            case ScanResult.WIFI_STANDARD_11AC:
                 return WIFI_5_PIE[wifiLevel];
-            case 6:
+            case ScanResult.WIFI_STANDARD_11AX:
                 return WIFI_6_PIE[wifiLevel];
+            case ScanResult.WIFI_STANDARD_11BE:
+                return WIFI_7_PIE[wifiLevel];
             default:
                 return WIFI_PIE[wifiLevel];
        }
