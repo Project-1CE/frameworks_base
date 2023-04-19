@@ -444,12 +444,7 @@ public class UdfpsController implements DozeReceiver {
                     // We need to persist its ID to track it during ACTION_MOVE that could include
                     // data for many other pointers because of multi-touch support.
                     mActivePointerId = event.getPointerId(0);
-                    final int idx = mActivePointerId == -1
-                            ? event.getPointerId(0)
-                            : event.findPointerIndex(mActivePointerId);
                     mVelocityTracker.addMovement(event);
-                    onFingerDown(requestId, (int) event.getRawX(), (int) event.getRawY(),
-                            (int) event.getTouchMinor(idx), (int) event.getTouchMajor(idx));
                     handled = true;
                     mAcquiredReceived = false;
                 }
@@ -598,7 +593,7 @@ public class UdfpsController implements DozeReceiver {
             @NonNull VibratorHelper vibrator,
             @NonNull UdfpsHapticsSimulator udfpsHapticsSimulator,
             @NonNull UdfpsShell udfpsShell,
-            @NonNull UdfpsHbmProvider hbmProvider,
+            @NonNull Optional<UdfpsHbmProvider> hbmProvider,
             @NonNull KeyguardStateController keyguardStateController,
             @NonNull DisplayManager displayManager,
             @Main Handler mainHandler,
@@ -630,7 +625,7 @@ public class UdfpsController implements DozeReceiver {
         mPowerManager = powerManager;
         mAccessibilityManager = accessibilityManager;
         mLockscreenShadeTransitionController = lockscreenShadeTransitionController;
-        mHbmProvider = hbmProvider;
+        mHbmProvider = hbmProvider.orElse(null);
         screenLifecycle.addObserver(mScreenObserver);
         mScreenOn = screenLifecycle.getScreenState() == ScreenLifecycle.SCREEN_ON;
         mConfigurationController = configurationController;
