@@ -128,7 +128,12 @@ class KeyguardQuickAffordanceOnTouchListener(
                                         )
                                     shakeAnimator.start()
 
-                                    vibratorHelper?.vibrate(KeyguardBottomAreaVibrations.Shake)
+                                    vibratorHelper?.vibrate(
+                                        if (KeyguardBottomAreaVibrations.areAllPrimitivesSupported) {
+                                            KeyguardBottomAreaVibrations.Shake
+                                        } else {
+                                            KeyguardBottomAreaVibrations.ShakeAlt
+                                        })
                                 }
                             } else {
                                 null
@@ -151,9 +156,17 @@ class KeyguardQuickAffordanceOnTouchListener(
         view.setOnClickListener {
             vibratorHelper?.vibrate(
                 if (viewModel.isActivated) {
-                    KeyguardBottomAreaVibrations.Activated
+                    if (KeyguardBottomAreaVibrations.areAllPrimitivesSupported) {
+                        KeyguardBottomAreaVibrations.Activated
+                    } else {
+                        KeyguardBottomAreaVibrations.ActivatedAlt
+                    }
                 } else {
-                    KeyguardBottomAreaVibrations.Deactivated
+                    if (KeyguardBottomAreaVibrations.areAllPrimitivesSupported) {
+                        KeyguardBottomAreaVibrations.Deactivated
+                    } else {
+                        KeyguardBottomAreaVibrations.DeactivatedAlt
+                    }
                 }
             )
             viewModel.onClicked(
