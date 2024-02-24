@@ -672,6 +672,9 @@ public class MobileSignalController extends SignalController<MobileState, Mobile
             mCurrentState.networkNameData = mCurrentState.getOperatorAlphaShort();
         }
 
+        mCurrentState.mobileDataEnabled = mPhone.isDataEnabled();
+        mCurrentState.roamingDataEnabled = mPhone.isDataRoamingEnabled();
+
         notifyListenersIfNecessary();
     }
 
